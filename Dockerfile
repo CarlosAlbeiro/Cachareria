@@ -1,23 +1,15 @@
 # Etapa 1: Construcción (Build)
-FROM ovhcom/bun:1.0 AS build
+FROM node:20-alpine as builder
 WORKDIR /app
-
-# Copiamos archivos de dependencias
-COPY package.json bun.lockb ./
-
-# Instalamos dependencias
-RUN bun install
-
-# Copiamos el resto del código y generamos el build
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN bun run build
+RUN npm run build
 
-# Etapa 2: Servidor de Producción (Nginx)
+# Etapa 2: Producción (Servir los archivos estáticos)
 FROM nginx:alpine
-# Copiamos los archivos generados por Vite (carpeta dist) a Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Exponemos el puerto 8081
+# Copiamos los archivos compilados de la etapa anterior a la carpeta de Nginx
+COPY --from=builder /app/dist /usr/share/nginx/html
+# Exponemos el puerto 8081 (el puerto por defecto de Nginx)
 EXPOSE 8081
-
 CMD ["nginx", "-g", "daemon off;"]
