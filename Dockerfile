@@ -1,16 +1,12 @@
-# Etapa 1: Construcción (Build)
-FROM node:20-alpine as builder
+FROM node:18
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
 COPY . .
+RUN npm install
 RUN npm run build
 
-# Etapa 2: Producción (Servir los archivos estáticos)
-FROM nginx:alpine
+RUN npm install -g serve
 
-# Copiamos los archivos compilados de la etapa anterior a la carpeta de Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
-# Exponemos el puerto 8081 (el puerto por defecto de Nginx)
-EXPOSE 8081
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3000
+
+CMD ["serve", "-s", "dist", "-l", "3000"]
